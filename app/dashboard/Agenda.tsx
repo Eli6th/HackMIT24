@@ -4,7 +4,7 @@ import { createBrowserSupabaseClient } from "@/lib/client-utils";
 import { useEffect, useState } from "react";
 import { CSSTransition, TransitionGroup } from 'react-transition-group'; // Animation Library
 import { PlusIcon, TrashIcon, MicrophoneIcon, StopIcon } from "@heroicons/react/outline"; // Example icon imports
-import { set } from "zod";
+import { ArrowLeftIcon } from "lucide-react";
 
 // Define types for our todos and agendas
 interface Todo {
@@ -177,7 +177,7 @@ export default function AgendaManager() {
 
       {selectedAgenda ? (
         <div>
-          <button
+          {/* <button
             onClick={() => {
               setTodos([]);
               setSelectedAgenda(null)
@@ -185,14 +185,27 @@ export default function AgendaManager() {
             className="mb-4 text-blue-600 hover:underline dark:text-blue-300"
           >
             Back to Agendas
-          </button>
+          </button> */}
+
+          <ArrowLeftIcon
+            onClick={() => {
+              setTodos([]);
+              setSelectedAgenda(null)
+            }}
+            className="h-5 w-5 mb-5 text-blue-600 hover:text-blue-800 cursor-pointer"
+          />
 
             <h2 className="mb-4 text-2xl font-semibold text-black flex items-center justify-between">
-            {selectedAgenda.name}
-            <TrashIcon
-              onClick={() => deleteAgenda(selectedAgenda.id)}
-              className="h-5 w-5 text-red-600 hover:text-red-800 cursor-pointer"
-            />
+              {selectedAgenda.name}
+                <button
+                onClick={() => deleteAgenda(selectedAgenda.id)}
+                className="flex items-center bg-red-600 text-white rounded-lg px-3 py-2 hover:bg-red-800 cursor-pointer"
+                >
+                <TrashIcon className="h-5 w-5 mr-2" />
+                <span
+                className="text-sm"
+                >Delete Agenda</span>
+                </button>
             </h2>
 
           <form onSubmit={addTask} className="mb-4 flex">
