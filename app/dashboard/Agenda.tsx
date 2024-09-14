@@ -3,7 +3,8 @@
 import { createBrowserSupabaseClient } from "@/lib/client-utils";
 import { useEffect, useState } from "react";
 import { CSSTransition, TransitionGroup } from 'react-transition-group'; // Animation Library
-import { PlusIcon, TrashIcon } from "@heroicons/react/outline"; // Example icon imports
+import { PlusIcon, TrashIcon, MicrophoneIcon, StopIcon } from "@heroicons/react/outline"; // Example icon imports
+import { set } from "zod";
 
 // Define types for our todos and agendas
 interface Todo {
@@ -31,6 +32,15 @@ export default function AgendaManager() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [newTask, setNewTask] = useState<string>("");
   const [newAgendaName, setNewAgendaName] = useState<string>("");
+  const [recording, setRecording] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (recording) {
+      console.log("Recording audio...");
+    } else {
+      console.log("Stopped recording audio.");
+    }
+  }, [recording])
 
   // Fetch agendas from Supabase
   useEffect(() => {
@@ -231,6 +241,28 @@ export default function AgendaManager() {
               </CSSTransition>
             ))}
           </TransitionGroup>
+
+          {/* a big red record button */}
+
+          <div
+            className="flex justify-center mt-4"
+          >
+            {!recording ? (
+            <MicrophoneIcon
+              className="h-16 w-16 text-red-600 hover:text-red-800 cursor-pointer"
+              onClick={() => {
+                setRecording(!recording)
+              }}
+            />
+            ) : (
+            <StopIcon
+              className="h-16 w-16 text-red-600 hover:text-red-800 cursor-pointer"
+              onClick={() => {
+                setRecording(!recording)
+              }}
+            />
+            )}
+          </div>
         </div>
       ) : (
         <div>
