@@ -1,4 +1,3 @@
-import { ModeToggle } from "@/app/(components-navbar)/mode-toggle";
 import { Toaster } from "@/components/ui/toaster";
 import AuthStatus from "./(components-navbar)/auth-status";
 import Navbar from "./(components-navbar)/navbar";
@@ -21,7 +20,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="flex h-16 items-center px-4">
                 <Navbar className="mx-6" />
                 <div className="ml-auto flex items-center space-x-4">
-                  <ModeToggle />
                   <AuthStatus />
                 </div>
               </div>
