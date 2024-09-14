@@ -1,6 +1,7 @@
+import { Button } from "@/components/ui/button";
 import { createServerSupabaseClient } from "@/lib/server-utils";
 import { getUserProfile } from "@/lib/utils";
-import LoginButton from "./login-button";
+import Link from "next/link";
 import UserNav from "./user-nav";
 
 export default async function AuthStatus() {
@@ -11,7 +12,11 @@ export default async function AuthStatus() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return <LoginButton />;
+    return (
+      <Button asChild>
+        <Link href="/login">Log in</Link>
+      </Button>
+    );
   }
 
   const { profile, error } = await getUserProfile(supabase, user);
