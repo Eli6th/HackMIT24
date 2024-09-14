@@ -57,7 +57,7 @@
     "autoprefixer": "^10.4.19",
     "cross-env": "^7.0.3",
     "dotenv-cli": "^7.4.2",
-    "eslint": "^9.5.0",
+    "eslint": "^8.56.0",
     "eslint-config-next": "^14.2.4",
     "eslint-config-prettier": "^9.1.0",
     "postcss": "^8.4.38",
