@@ -1,5 +1,8 @@
+"use client";
+
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
+import 'dotenv/config';
 
 // Define types for our todos
 interface Todo {
@@ -9,40 +12,79 @@ interface Todo {
 }
 
 // Initialize Supabase
-const supabaseUrl = "https://xyzcompany.supabase.co"; // Replace with your Supabase URL
-const supabaseKey = "public-anon-key"; // Replace with your Supabase key
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error("Missing Supabase URL or key");
+}
 const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey);
 
 const Agenda: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
+  const [newTask, setNewTask] = useState<string>("");
 
-  // Fetch and subscribe to changes in the todos table
+  // Fetch tasks from Supabase
   useEffect(() => {
     const fetchTodos = async () => {
       const { data, error } = await supabase.from<Todo>("todos").select("*").order("id", { ascending: true });
-
-      if (error) console.error(error);
-      else setTodos(data || []);
+      if (error) {
+        console.error("Error fetching todos:", error.message);
+      } else {
+        setTodos(data || []);
+      }
     };
 
-    // Subscribe to changes
-    const subscription = supabase
-      .from("todos")
-      .on("*", (payload) => {
-        fetchTodos();
-      })
-      .subscribe();
-
+    // Initial fetch
     fetchTodos();
 
-    return () => {
-      supabase.removeSubscription(subscription);
-    };
+    // Set up interval to fetch every 10 seconds
+    const intervalId = setInterval(() => {
+      fetchTodos();
+    }, 10000); // 10 seconds in milliseconds
+
+    // Clear interval on component unmount
+    return () => clearInterval(intervalId);
   }, []);
+
+  // Add new task to Supabase
+  const addTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newTask.trim() === "") return;
+
+    const { data, error } = await supabase
+      .from("todos")
+      .insert([{ title: newTask, completed: false }]);
+
+    if (error) {
+      console.error("Error adding task:", error.message);
+    } else {
+      setTodos([...todos, ...(data ?? [])]);  // Update the list locally after insert
+      setNewTask("");  // Clear the input field
+    }
+  };
 
   return (
     <div className="mx-auto max-w-lg rounded-lg bg-white p-4 shadow-lg">
       <h1 className="mb-4 text-2xl font-bold text-gray-800">My Agenda</h1>
+
+      {/* Add Task Form */}
+      <form onSubmit={addTask} className="mb-4 flex">
+        <input
+          type="text"
+          placeholder="Add a new task"
+          value={newTask}
+          onChange={(e) => setNewTask(e.target.value)}
+          className="w-full rounded-lg border p-2 mr-2"
+        />
+        <button
+          type="submit"
+          className="rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+        >
+          Add
+        </button>
+      </form>
+
+      {/* Task List */}
       <ul className="space-y-3">
         {todos.map((todo) => (
           <li
@@ -51,7 +93,9 @@ const Agenda: React.FC = () => {
               todo.completed ? "border-green-400 bg-green-100" : "border-gray-400 bg-gray-100"
             }`}
           >
-            <span className={`${todo.completed ? "text-gray-500 line-through" : "text-gray-800"}`}>{todo.title}</span>
+            <span className={`${todo.completed ? "text-gray-500 line-through" : "text-gray-800"}`}>
+              {todo.title}
+            </span>
           </li>
         ))}
       </ul>
