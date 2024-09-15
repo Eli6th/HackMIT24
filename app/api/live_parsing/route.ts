@@ -34,7 +34,7 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json({message: {
-    agenda: agenda_response_json.message,
-    action_items: action_response_json.message
+    agenda: JSON.parse(agenda_response_json.message),
+    action_items: JSON.parse(action_response_json.message)
   }, error: null, status: 200});
 }
