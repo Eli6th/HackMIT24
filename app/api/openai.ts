@@ -21,6 +21,8 @@ export async function callOpenAi({
       request_message = `${message_prompt} with the following JSON response format: ${JSON.stringify(json_response)}`;
     }
 
+    console.log(request_message);
+
     const completion = await openai.chat.completions.create({
       messages: [
         { role: "system", content: system_prompt },

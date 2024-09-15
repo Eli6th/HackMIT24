@@ -3,7 +3,7 @@
 import { createBrowserSupabaseClient } from "@/lib/client-utils";
 import { useEffect, useState } from "react";
 import { CSSTransition, TransitionGroup } from 'react-transition-group'; // Animation Library
-import { PlusIcon, TrashIcon, MicrophoneIcon, StopIcon } from "@heroicons/react/outline"; // Example icon imports
+import { PlusIcon, TrashIcon } from "@heroicons/react/outline"; // Example icon imports
 import { ArrowLeftIcon } from "lucide-react";
 import Dictaphone from "./Microphone";
 // Define types for our todos and agendas
@@ -24,6 +24,7 @@ interface Agenda {
   created_at: string;
 }
 
+let transcript = "";
 export default function AgendaManager() {
   const supabase = createBrowserSupabaseClient();
 
@@ -32,9 +33,10 @@ export default function AgendaManager() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [newTask, setNewTask] = useState<string>("");
   const [newAgendaName, setNewAgendaName] = useState<string>("");
-  const [recording, setRecording] = useState<boolean>(false);
 
   const analyze = async (text: string) => {
+    transcript = transcript + ' ' + text;
+    console.log(transcript);
 
     // convert todos to just the id, name, and completed status
     const todoList = todos.map((todo) => {
@@ -46,22 +48,32 @@ export default function AgendaManager() {
     });
 
     // send the text to the server for analysis
-    await fetch('/api/analyze', {
+    const json = await fetch('/api/live_parsing', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ text, todos: todoList })
-    })
-  };
+      body: JSON.stringify({
+        "transcript": transcript,
+        "todoList": JSON.stringify(todoList),
+      }),
+    });
 
-  useEffect(() => {
-    if (recording) {
-      console.log("Recording audio...");
-    } else {
-      console.log("Stopped recording audio.");
-    }
-  }, [recording])
+    // handle the response
+    const response = await json.json();
+    console.log(response.message.agenda.agenda);
+
+    setTodos(response?.message.agenda?.agenda.map(
+      item => {
+        return {
+          id: item.id,
+          name: item.name,
+          completed: item.completed,
+          agenda_id: selectedAgenda?.id,
+          created_at: new Date().toISOString(),
+          reason: item.notes
+        }
+      }
+    )
+  );
+  };
 
   // Fetch agendas from Supabase
   useEffect(() => {
@@ -288,8 +300,8 @@ export default function AgendaManager() {
             className="flex justify-center mt-4"
           >
            <Dictaphone onChange={
-              (transcribedText: string) => {
-                analyze(transcribedText);
+              (transcript: string) => {
+                analyze(transcript);
            }}
            /> 
           </div>

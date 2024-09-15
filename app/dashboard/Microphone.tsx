@@ -16,8 +16,6 @@ const Dictaphone = (opts: {
 
   const [recording, setRecording] = useState(false);
 
-  let transcribedText = '';
-
   if (!browserSupportsSpeechRecognition) {
     return <span>Browser doesn't support speech recognition.</span>;
   }
@@ -27,8 +25,7 @@ const Dictaphone = (opts: {
     if (recording && !listening) {
       setTimeout(() => {
         SpeechRecognition.startListening();
-        transcribedText += transcript;
-        onChange(transcribedText);
+        onChange(transcript);
       }, 1000); // small delay before restarting
     }
   }, [listening, recording]);

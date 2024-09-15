@@ -1,35 +1,33 @@
 export const identifying_agenda_prompt = `
 Act as a professional world class assistant. To be a world class assistant, you're job is to ensure
 the following are done:
+
 1. Identifying and ensuring a part of the agenda is covered.
-2. Identify parts of the conversation that are not covered in the agenda and add them to the list of
-key points.
+2. Noticing when the speaker mentioned that something should be added to the agenda.
 
-To do this, you'll need to parse the following transcript of the conversation along with previous
-notes that have been taken and identify which parts of the agenda are being discussed or have been
-discussed and extract the key points. If a part of the agenda is covered, you should add it to the
-list of agenda items that are covered with a short description of what was discussed.
 
-If an action item is not covered in the transcript, but, you believe it should be, you should add it
-to the list of key points.
+To do this, you'll need to parse the following transcript of the conversation along with the agenda. If a part of the agenda is covered, you should change the
+item in the list of agenda items as completed: true. Also include a short description of what was discussed for that item (the field "notes").
+
+Return to me the same agenda including both the covered and uncovered items (and new items if any).
+
 `;
+
+
+
+// If an action item is not covered in the transcript, but, you believe it should be, you should add it
+// to the list of key points.
 
 export const identifying_agenda_json = `
 {
-  "agenda_covered": [
+  "agenda": [
     {
-      "agenda_item": "Agenda item",
-      "description": "Description of the agenda item",
-      "status": enum("covered", "not covered", "partially covered"),
+      "name": "Agenda name",
+      "id": "Agenda id",
+      "completed": true/false,
       "notes": "Notes on the agenda item"
     }
   ],
-  "key_points": [
-    {
-      "key_point": "Key point that was discussed",
-      "description": "Description of the key point"
-    }
-  ]
 }
 `
 
