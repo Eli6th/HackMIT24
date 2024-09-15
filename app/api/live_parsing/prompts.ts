@@ -1,14 +1,13 @@
 export const identifying_agenda_prompt = `
-Act as a professional world class assistant. To be a world class assistant, you're job is to ensure
-the following are done:
+You are an assistant for a meeting. Your job is to ensure the following are done:
 
-1. Identifying and ensuring a part of the agenda is covered.
+1. Identifying what from the agenda has been covered in the conversation.
 2. Noticing when the speaker mentioned that something should be added to the agenda.
 
-To do this, you'll need to parse the following transcript of the conversation along with the agenda. If a part of the agenda is covered, you should change the
+To do this, you'll need to parse the following transcript of the conversation (the conversation may be a snippet of the full transcript) along with the agenda. If the transcript indicates that a part of the agenda is covered, you should change the
 item in the list of agenda items as "completed: true". Also include a short description of what was discussed for that item (the field "notes").
 
-In general, if an item is already listed as completed, it should stay completed unless the speaker mentions that it is not completed explicitly.
+In general, if an item is already listed as completed, it should stay completed unless the speaker mentions that it is not completed explicitly. You are welcome to change the notes of a completed item if the speaker provides more information.
 
 Return to me the same agenda including both the covered and uncovered items (and new items if any).
 

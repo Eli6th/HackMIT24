@@ -1,11 +1,13 @@
 "use client";
 
 import { createBrowserSupabaseClient } from "@/lib/client-utils";
-import { MicrophoneIcon, PlusIcon, StopIcon, TrashIcon } from "@heroicons/react/outline"; // Example icon imports
-import { ArrowLeftIcon } from "lucide-react";
+import {PlusIcon, TrashIcon } from "@heroicons/react/outline"; // Example icon imports
+import { ArrowLeftIcon, InfoIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group"; // Animation Library
+import { Tooltip } from "react-tooltip";
 import Dictaphone from "./Microphone";
+
 
 import { SaveIcon } from "@heroicons/react/outline";
 // Define types for our todos and agendas
@@ -98,23 +100,7 @@ export default function AgendaManager() {
       await supabase.from("todo").upsert([todo]);
     }
     );
-    }
-    
-
-
-    // setTodos(response?.message.agenda?.agenda.map(
-    //   item => {
-    //     return {
-    //       id: item.id,
-    //       name: item.name,
-    //       completed: item.completed,
-    //       agenda_id: selectedAgenda?.id,
-    //       created_at: new Date().toISOString(),
-    //       reason: item.notes
-    //     }
-    //   }
-    // )
-    // );
+    }  
   };
 
   // Fetch agendas from Supabase
@@ -368,10 +354,19 @@ export default function AgendaManager() {
 
                     <span className={todo.completed ? "text-gray-500" : "text-gray-800"}>{todo.name}</span>
                   </div>
-                  <TrashIcon
-                    onClick={() => deleteTask(todo.id)}
-                    className="h-5 w-5 cursor-pointer text-red-600 hover:text-red-800"
-                  />
+                  <div className="flex items-center space-x-3">
+                    <InfoIcon
+                    className="h-5 w-5 cursor-pointer text-blue-600 hover:text-blue-800"
+                    id={"todo" + todo.id}
+                    />
+                    <Tooltip anchorSelect={`#todo${todo.id}`}>
+                      {todo.reason}
+                    </Tooltip>
+                    <TrashIcon
+                      onClick={() => deleteTask(todo.id)}
+                      className="h-5 w-5 cursor-pointer text-red-600 hover:text-red-800"
+                    />
+                  </div>
                 </li>
               </CSSTransition>
             ))}
