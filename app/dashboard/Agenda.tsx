@@ -266,21 +266,7 @@ export default function AgendaManager() {
           <div
             className="flex justify-center mt-4"
           >
-            {!recording ? (
-            <MicrophoneIcon
-              className="h-16 w-16 text-red-600 hover:text-red-800 cursor-pointer"
-              onClick={() => {
-                setRecording(!recording)
-              }}
-            />
-            ) : (
-            <StopIcon
-              className="h-16 w-16 text-red-600 hover:text-red-800 cursor-pointer"
-              onClick={() => {
-                setRecording(!recording)
-              }}
-            />
-            )}
+           <Dictaphone/> 
           </div>
         </div>
       ) : (
