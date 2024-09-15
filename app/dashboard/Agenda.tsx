@@ -305,8 +305,11 @@ export default function AgendaManager() {
               </select>
             </div>
           
-            <h2 className="mb-4 text-2xl font-semibold text-black flex items-center justify-between">
+            <h2 className="mb-4 text-2xl font-semibold text-black">
+              <div className="mb-3">
               {selectedAgenda.name}
+              </div>
+              <div className=" flex items-center justify-between">
                 <button
                 onClick={() => saveAgendaAsTemplate(selectedAgenda.id)}
                 className="flex items-center bg-green-600 text-white rounded-lg px-3 py-2 hover:bg-green-800 cursor-pointer"
@@ -326,6 +329,7 @@ export default function AgendaManager() {
                 className="text-sm"
                 >Delete Agenda</span>
                 </button>
+                </div>
             </h2>
 
           <form onSubmit={addTask} className="mb-4 flex">
