@@ -1,17 +1,18 @@
-'use client';
+"use client";
 
 import { createBrowserSupabaseClient } from "@/lib/client-utils";
-import { useEffect, useState } from "react";
-import { CSSTransition, TransitionGroup } from 'react-transition-group'; // Animation Library
-import { PlusIcon, TrashIcon, MicrophoneIcon, StopIcon } from "@heroicons/react/outline"; // Example icon imports
+import { MicrophoneIcon, PlusIcon, StopIcon, TrashIcon } from "@heroicons/react/outline"; // Example icon imports
 import { ArrowLeftIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { CSSTransition, TransitionGroup } from "react-transition-group"; // Animation Library
 import Dictaphone from "./Microphone";
+
 // Define types for our todos and agendas
 interface Todo {
   id: number;
   name: string;
   completed: boolean;
-  agenda_id: number; 
+  agenda_id: number;
   created_at: string;
   reason: string;
 }
@@ -35,24 +36,23 @@ export default function AgendaManager() {
   const [recording, setRecording] = useState<boolean>(false);
 
   const analyze = async (text: string) => {
-
     // convert todos to just the id, name, and completed status
     const todoList = todos.map((todo) => {
       return {
         id: todo.id,
         name: todo.name,
-        completed: todo.completed
+        completed: todo.completed,
       };
     });
 
     // send the text to the server for analysis
-    await fetch('/api/analyze', {
-      method: 'POST',
+    await fetch("/api/analyze", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ text, todos: todoList })
-    })
+      body: JSON.stringify({ text, todos: todoList }),
+    });
   };
 
   useEffect(() => {
@@ -61,15 +61,12 @@ export default function AgendaManager() {
     } else {
       console.log("Stopped recording audio.");
     }
-  }, [recording])
+  }, [recording]);
 
   // Fetch agendas from Supabase
   useEffect(() => {
     const fetchAgendas = async () => {
-      const { data, error } = await supabase
-        .from<Agenda>("agenda")
-        .select("*")
-        .order("id", { ascending: true });
+      const { data, error } = await supabase.from<Agenda>("agenda").select("*").order("id", { ascending: true });
       if (error) {
         console.error("Error fetching agendas:", error.message);
       } else {
@@ -100,20 +97,20 @@ export default function AgendaManager() {
       fetchTodos();
     }
   }, [selectedAgenda]);
-  
-  <Dictaphone />
+
+  <Dictaphone />;
   // Add new task to the selected agenda
   const addTask = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newTask.trim() === "" || !selectedAgenda) return;
 
-    const todo = { 
-      name: newTask, 
-      completed: false, 
+    const todo = {
+      name: newTask,
+      completed: false,
       agenda_id: selectedAgenda.id,
       created_at: new Date().toISOString(),
       reason: "",
-      id: Math.floor(Math.random() * 1000)
+      id: Math.floor(Math.random() * 1000),
     };
 
     const { error } = await supabase.from("todo").insert([todo]);
@@ -122,7 +119,7 @@ export default function AgendaManager() {
       console.error("Error adding task:", error.message);
     } else {
       setTodos([...todos, ...([todo] ?? [])]);
-      setNewTask(""); 
+      setNewTask("");
     }
   };
 
@@ -142,12 +139,12 @@ export default function AgendaManager() {
     e.preventDefault();
     if (newAgendaName.trim() === "") return;
 
-    const agenda = { 
+    const agenda = {
       name: newAgendaName,
       user_id: (await supabase.auth.getUser()).data.user?.id,
-      id: Math.floor(Math.random() * 1000), 
+      id: Math.floor(Math.random() * 1000),
       created_at: new Date().toISOString(),
-      is_template: false
+      is_template: false,
     };
 
     const { error } = await supabase.from("agenda").insert([agenda]);
@@ -156,7 +153,7 @@ export default function AgendaManager() {
       console.error("Error adding agenda:", error.message);
     } else {
       setAgendas([...agendas, ...([agenda] ?? [])]);
-      setNewAgendaName(""); 
+      setNewAgendaName("");
     }
   };
 
@@ -182,17 +179,12 @@ export default function AgendaManager() {
   // Handle task completion toggle
   const toggleComplete = async (todo: Todo) => {
     const updatedTodo = { ...todo, completed: !todo.completed };
-    const { error } = await supabase
-      .from("todo")
-      .update({ completed: updatedTodo.completed })
-      .eq("id", updatedTodo.id);
+    const { error } = await supabase.from("todo").update({ completed: updatedTodo.completed }).eq("id", updatedTodo.id);
 
     if (error) {
       console.error("Error updating task:", error.message);
     } else {
-      setTodos((prevTodos) =>
-        prevTodos.map((t) => (t.id === updatedTodo.id ? updatedTodo : t))
-      );
+      setTodos((prevTodos) => prevTodos.map((t) => (t.id === updatedTodo.id ? updatedTodo : t)));
     }
   };
 
@@ -217,23 +209,21 @@ export default function AgendaManager() {
           <ArrowLeftIcon
             onClick={() => {
               setTodos([]);
-              setSelectedAgenda(null)
+              setSelectedAgenda(null);
             }}
-            className="h-5 w-5 mb-5 text-blue-600 hover:text-blue-800 cursor-pointer"
+            className="mb-5 h-5 w-5 cursor-pointer text-blue-600 hover:text-blue-800"
           />
 
-            <h2 className="mb-4 text-2xl font-semibold text-black flex items-center justify-between">
-              {selectedAgenda.name}
-                <button
-                onClick={() => deleteAgenda(selectedAgenda.id)}
-                className="flex items-center bg-red-600 text-white rounded-lg px-3 py-2 hover:bg-red-800 cursor-pointer"
-                >
-                <TrashIcon className="h-5 w-5 mr-2" />
-                <span
-                className="text-sm"
-                >Delete Agenda</span>
-                </button>
-            </h2>
+          <h2 className="mb-4 flex items-center justify-between text-2xl font-semibold text-black">
+            {selectedAgenda.name}
+            <button
+              onClick={() => deleteAgenda(selectedAgenda.id)}
+              className="flex cursor-pointer items-center rounded-lg bg-red-600 px-3 py-2 text-white hover:bg-red-800"
+            >
+              <TrashIcon className="mr-2 h-5 w-5" />
+              <span className="text-sm">Delete Agenda</span>
+            </button>
+          </h2>
 
           <form onSubmit={addTask} className="mb-4 flex">
             <input
@@ -241,7 +231,7 @@ export default function AgendaManager() {
               placeholder="Add a new task"
               value={newTask}
               onChange={(e) => setNewTask(e.target.value)}
-              className="w-full rounded-lg border p-2 mr-2 bg-gray-100 text-black"
+              className="mr-2 w-full rounded-lg border bg-gray-100 p-2 text-black"
             />
             <button
               type="submit"
@@ -262,20 +252,18 @@ export default function AgendaManager() {
                   }`}
                 >
                   <div className="flex items-center space-x-3">
-                  <input
-                    type="checkbox"
-                    checked={todo.completed}
-                    onChange={() => toggleComplete(todo)}
-                    className="h-5 w-5 rounded border-gray-300 bg-white text-green-600 focus:ring-green-400"
-                  />
+                    <input
+                      type="checkbox"
+                      checked={todo.completed}
+                      onChange={() => toggleComplete(todo)}
+                      className="h-5 w-5 rounded border-gray-300 bg-white text-green-600 focus:ring-green-400"
+                    />
 
-                    <span className={todo.completed ? "text-gray-500" : "text-gray-800"}>
-                      {todo.name}
-                    </span>
+                    <span className={todo.completed ? "text-gray-500" : "text-gray-800"}>{todo.name}</span>
                   </div>
                   <TrashIcon
                     onClick={() => deleteTask(todo.id)}
-                    className="h-5 w-5 text-red-600 hover:text-red-800 cursor-pointer"
+                    className="h-5 w-5 cursor-pointer text-red-600 hover:text-red-800"
                   />
                 </li>
               </CSSTransition>
@@ -284,14 +272,22 @@ export default function AgendaManager() {
 
           {/* a big red record button */}
 
-          <div
-            className="flex justify-center mt-4"
-          >
-           <Dictaphone onChange={
-              (transcribedText: string) => {
-                analyze(transcribedText);
-           }}
-           /> 
+          <div className="mt-4 flex justify-center">
+            {!recording ? (
+              <MicrophoneIcon
+                className="h-16 w-16 cursor-pointer text-red-600 hover:text-red-800"
+                onClick={() => {
+                  setRecording(!recording);
+                }}
+              />
+            ) : (
+              <StopIcon
+                className="h-16 w-16 cursor-pointer text-red-600 hover:text-red-800"
+                onClick={() => {
+                  setRecording(!recording);
+                }}
+              />
+            )}
           </div>
         </div>
       ) : (
@@ -302,7 +298,7 @@ export default function AgendaManager() {
               placeholder="Add a new agenda"
               value={newAgendaName}
               onChange={(e) => setNewAgendaName(e.target.value)}
-              className="w-full rounded-lg border p-2 mr-2  bg-gray-100"
+              className="mr-2 w-full rounded-lg border bg-gray-100 p-2"
             />
             <button
               type="submit"
@@ -317,7 +313,7 @@ export default function AgendaManager() {
               <li
                 key={agenda.id}
                 onClick={() => setSelectedAgenda(agenda)}
-                className="text-black cursor-pointer rounded-lg border border-gray-400 bg-gray-100 p-3 transition-all hover:bg-gray-200 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600"
+                className="cursor-pointer rounded-lg border border-gray-400 bg-gray-100 p-3 text-black transition-all hover:bg-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600"
               >
                 {agenda.name}
               </li>
