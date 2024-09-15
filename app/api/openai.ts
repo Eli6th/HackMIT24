@@ -2,18 +2,6 @@
 import { env } from "@/env.mjs";
 import { NextResponse } from "next/server";
 import { OpenAI } from 'openai';
-import { z } from "zod";
-import { zodResponseFormat } from "openai/helpers/zod";
-
-// const Step = z.object({
-//   explanation: z.string(),
-//   output: z.string(),
-// });
-
-// const MathReasoning = z.object({
-//   steps: z.array(Step),
-//   final_answer: z.string(),
-// });
 
 export async function callOpenAi({
   system_prompt,
@@ -22,16 +10,14 @@ export async function callOpenAi({
 }: {
   system_prompt: string,
   message_prompt: string,
-  json_response: object | null,
+  json_response: string | null,
 }) {
   try {
     const openai = new OpenAI({
       apiKey: env.OPENAI_API_KEY,
     });
 
-    // const format = json_response != null ? { type: "json_object" } : { type: "text" };
-
-    let request_message = `${message_prompt}`;
+    let request_message = `${message_prompt} with the following JSON response format: {"response": "text here"}`;
     if (json_response != null) {
       request_message = `${message_prompt} with the following JSON response format: ${JSON.stringify(json_response)}`;
     }
@@ -43,7 +29,7 @@ export async function callOpenAi({
       ],
       model: "gpt-4o-mini",
       max_tokens: 3000,
-      // response_format: { type: "json_object" },
+      response_format: { type: "json_object" },
       temperature: 0,
     });
 
