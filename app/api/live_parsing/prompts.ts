@@ -9,6 +9,8 @@ the following are done:
 To do this, you'll need to parse the following transcript of the conversation along with the agenda. If a part of the agenda is covered, you should change the
 item in the list of agenda items as completed: true. Also include a short description of what was discussed for that item (the field "notes").
 
+In general, if an item is already listed as completed, it should stay completed unless the speaker mentions that it is not completed explicitly.
+
 Return to me the same agenda including both the covered and uncovered items (and new items if any).
 
 `;
