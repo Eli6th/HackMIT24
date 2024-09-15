@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { CSSTransition, TransitionGroup } from 'react-transition-group'; // Animation Library
 import { PlusIcon, TrashIcon, MicrophoneIcon, StopIcon } from "@heroicons/react/outline"; // Example icon imports
 import { ArrowLeftIcon } from "lucide-react";
-
+import Dictaphone from "./Microphone";
 // Define types for our todos and agendas
 interface Todo {
   id: number;
@@ -79,7 +79,8 @@ export default function AgendaManager() {
       fetchTodos();
     }
   }, [selectedAgenda]);
-
+  
+  <Dictaphone />
   // Add new task to the selected agenda
   const addTask = async (e: React.FormEvent) => {
     e.preventDefault();
