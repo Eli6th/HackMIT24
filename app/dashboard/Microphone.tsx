@@ -15,13 +15,20 @@ const Dictaphone = () => {
     return <span>Browser doesn't support speech recognition.</span>;
   }
 
+  if (recording && !listening) {
+    setTimeout(() => {
+      SpeechRecognition.startListening();
+    }, 500);
+  }
+
+
   return (
     <div
       className='flex flex-col items-center justify-center'
     >
 
       {
-        recording && listening ? (
+        recording ? (
           <StopIcon
               className="h-16 w-16 text-red-600 hover:text-red-800 cursor-pointer"
               onClick={() => {
