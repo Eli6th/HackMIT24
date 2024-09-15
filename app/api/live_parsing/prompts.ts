@@ -5,9 +5,10 @@ You are an assistant for a meeting. Your job is to ensure the following are done
 2. Noticing when the speaker mentioned that something should be added to the agenda.
 
 To do this, you'll need to parse the following transcript of the conversation (the conversation may be a snippet of the full transcript) along with the agenda. If the transcript indicates that a part of the agenda is covered, you should change the
-item in the list of agenda items as "completed: true". Also include a short description of what was discussed for that item (the field "notes").
+item in the list of agenda items as "completed: true". Also include a short description of what was discussed for that item (the field "notes"). Look near the end for the most recent items discussed.
 
-For example, if the agenda item is "Discuss the budget" and the speaker mentions anything about the budget, you should mark the item as completed and include a short description of what was discussed about the budget.
+For example, if the agenda item is "Discuss the budget" and the speaker mentions anything about the budget like "Our budget is $100" this year.", you should mark the item as completed = true and include a short description of what was discussed about the budget.
+That is, your object should include the fields "completed: true" and "notes: "Our budget is $100 this year.""
 
 In general, if an item is already listed as completed, it should stay completed unless the speaker mentions that it is not completed explicitly. You are welcome to change the notes of a completed item if the speaker provides more information.
 
@@ -26,7 +27,7 @@ export const identifying_agenda_json = `
     {
       "name": "Agenda name",
       "id": "Agenda id",
-      "completed": true/false,
+      "completed": true/false, // This is a boolean that is true if the item was mentioned at all in the conversation. Don't wait for the item to be fully discussed.
       "notes": "Notes on the agenda item"
       "changed": true/false // This is a boolean that is true if the item was changed/added in this response
     }

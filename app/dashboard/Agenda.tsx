@@ -39,7 +39,7 @@ export default function AgendaManager() {
   const [newAgendaName, setNewAgendaName] = useState<string>("");
 
   const analyze = async (text: string) => {
-    transcript = transcript + ' ' + text;
+    transcript = transcript + '. \n' + text;
     console.log(transcript);
 
     // convert todos to just the id, name, and completed status
