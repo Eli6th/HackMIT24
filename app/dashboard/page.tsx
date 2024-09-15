@@ -2,6 +2,8 @@
 import { createServerSupabaseClient } from "@/lib/server-utils";
 import { redirect } from "next/navigation";
 import Agenda from "./Agenda";
+import AuthStatus from "../(components-navbar)/auth-status";
+import Navbar from "../(components-navbar)/navbar";
 
 
 export default async function Dashboard() {
@@ -28,6 +30,15 @@ export default async function Dashboard() {
 
 
   return (
-    <Agenda/> 
+    <>
+      <div className="flex h-16 items-center px-4">
+        <Navbar className="mx-6 text-default" />
+        <div className="ml-auto flex items-center space-x-4">
+          <AuthStatus />
+        </div>
+      </div>
+
+      <Agenda />
+    </>
   );
 }

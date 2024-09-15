@@ -30,12 +30,12 @@ export default function Home() {
       </header>
 
       {/* Main content */}
-      <main className="relative z-10 self-center flex flex-grow flex-col items-center justify-center text-center text-white max-w-3xl pb-8">
+      <main className="relative z-10 self-center flex flex-grow flex-col items-center justify-center text-center text-white max-w-3xl p-5 pb-8">
         <Image src="/logo.png" alt="speakEZ" width={300} height={300} />
-        <h1 className="mb-6 font-sans text-6xl font-bold">Never Miss a Beat in Your Conversations</h1>
-        <p className="mb-8 font-sans text-xl p-8">
+        <h1 className="mb-6 font-sans text-4xl sm:text-6xl font-bold">Never Miss a Beat in Your Conversations</h1>
+        <p className="mb-8 font-sans text-xl sm:text-2xl p-8">
           Track discussions, follow agendas, and receive detailed reports all in real-time. Elevate your interactions
-          with speakEZ.
+          with SpeakEZ.
         </p>
         <a href="/login">
           <button className="rounded-lg bg-white px-6 py-3 font-sans font-bold text-black transition-all hover:bg-gray-200">
