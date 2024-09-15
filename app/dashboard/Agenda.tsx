@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group"; // Animation Library
 import Dictaphone from "./Microphone";
 
+import { SaveIcon } from "@heroicons/react/outline";
 // Define types for our todos and agendas
 interface Todo {
   id: number;
@@ -28,7 +29,6 @@ interface Agenda {
 let transcript = "";
 export default function AgendaManager() {
   const supabase = createBrowserSupabaseClient();
-
   const [agendas, setAgendas] = useState<Agenda[]>([]);
   const [selectedAgenda, setSelectedAgenda] = useState<Agenda | null>(null);
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -189,10 +189,23 @@ export default function AgendaManager() {
     }
   };
 
+  // Save agenda as template
+  const saveAgendaAsTemplate = async (id: number) => {
+    const { error } = await supabase.from("agenda").update({ is_template: true }).eq("id", id);
+    if (error) {
+      console.error("Error saving agenda as template:", error.message);
+    } else {
+      setAgendas(agendas.map(agenda => agenda.id === id ? { ...agenda, is_template: true } : agenda));
+    }
+  };
+
   // Handle task completion toggle
   const toggleComplete = async (todo: Todo) => {
     const updatedTodo = { ...todo, completed: !todo.completed };
-    const { error } = await supabase.from("todo").update({ completed: updatedTodo.completed }).eq("id", updatedTodo.id);
+    const { error } = await supabase
+      .from("todo")
+      .update({ completed: updatedTodo.completed })
+        .eq("id", updatedTodo.id);
 
     if (error) {
       console.error("Error updating task:", error.message);
@@ -224,19 +237,55 @@ export default function AgendaManager() {
               setTodos([]);
               setSelectedAgenda(null);
             }}
-            className="mb-5 h-5 w-5 cursor-pointer text-blue-600 hover:text-blue-800"
-          />
+            className="h-5 w-5 mb-5 text-blue-600 hover:text-blue-800 cursor-pointer"
+          />  
+          {/* Drop down menu of agenda templates */}
+            <div className="mb-4">
+              <select
+                className="w-full rounded-lg border p-2 bg-gray-100 text-black"
+                onChange={(e) => {
+                  const selectedTemplate = agendas.find(agenda => agenda.id === parseInt(e.target.value));
+                  if (selectedTemplate) {
+                    setSelectedAgenda(selectedTemplate);
+                  }
+                  setTodos([]);
+                }}
+                value={selectedAgenda.id}
+              >
+                <option value={selectedAgenda.id}>Use Agenda Template</option>
+                {agendas
+                  .filter(agenda => agenda.is_template && agenda.id !== selectedAgenda.id)
+                  .map(agenda => (
+                    <option key={agenda.id} value={agenda.id}>
+                      {agenda.name}
+                    </option>
+                  ))
+                }
+              </select>
+            </div>
+          
+            <h2 className="mb-4 text-2xl font-semibold text-black flex items-center justify-between">
+              {selectedAgenda.name}
+                <button
+                onClick={() => saveAgendaAsTemplate(selectedAgenda.id)}
+                className="flex items-center bg-green-600 text-white rounded-lg px-3 py-2 hover:bg-green-800 cursor-pointer"
+                >
+                <SaveIcon className="h-5 w-5 mr-2" />
+                <span
+                className="text-sm"
+                >Save as Template</span>
+                </button>
 
-          <h2 className="mb-4 flex items-center justify-between text-2xl font-semibold text-black">
-            {selectedAgenda.name}
-            <button
-              onClick={() => deleteAgenda(selectedAgenda.id)}
-              className="flex cursor-pointer items-center rounded-lg bg-red-600 px-3 py-2 text-white hover:bg-red-800"
-            >
-              <TrashIcon className="mr-2 h-5 w-5" />
-              <span className="text-sm">Delete Agenda</span>
-            </button>
-          </h2>
+                <button
+                onClick={() => deleteAgenda(selectedAgenda.id)}
+                className="flex items-center bg-red-600 text-white rounded-lg px-3 py-2 hover:bg-red-800 cursor-pointer"
+                >
+                <TrashIcon className="h-5 w-5 mr-2" />
+                <span
+                className="text-sm"
+                >Delete Agenda</span>
+                </button>
+            </h2>
 
           <form onSubmit={addTask} className="mb-4 flex">
             <input
