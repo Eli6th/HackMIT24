@@ -142,9 +142,14 @@ export default function AgendaManager() {
   const deleteAgenda = async (id: number) => {
     // confirm deletion
     if (!window.confirm("Are you sure you want to delete this agenda?")) return;
+
+    // first delete all todos associated with this agenda
+    const { error: todoError } = await supabase.from("todo").delete().eq("agenda_id", id);
     const { error } = await supabase.from("agenda").delete().eq("id", id);
 
-    if (error) {
+    if (todoError) {
+      console.error("Error deleting todos:", todoError.message);
+    } else if (error) {
       console.error("Error deleting agenda:", error.message);
     } else {
       setAgendas(agendas.filter((agenda) => agenda.id !== id));
