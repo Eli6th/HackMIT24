@@ -1,25 +1,37 @@
 import { MicrophoneIcon, StopIcon } from '@heroicons/react/outline';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 
-const Dictaphone = () => {
+const Dictaphone = (opts: {
+  onChange: (text: string) => void;
+}) => {
+
+  const { onChange } = opts;
   const {
     transcript,
     listening,
     browserSupportsSpeechRecognition
   } = useSpeechRecognition();
+  
 
   const [recording, setRecording] = useState(false);
+
+  let transcribedText = '';
 
   if (!browserSupportsSpeechRecognition) {
     return <span>Browser doesn't support speech recognition.</span>;
   }
 
-  if (recording && !listening) {
-    setTimeout(() => {
-      SpeechRecognition.startListening();
-    }, 500);
-  }
+
+  useEffect(() => {
+    if (recording && !listening) {
+      setTimeout(() => {
+        SpeechRecognition.startListening();
+        transcribedText += transcript;
+        onChange(transcribedText);
+      }, 1000); // small delay before restarting
+    }
+  }, [listening, recording]);
 
 
   return (
@@ -49,7 +61,7 @@ const Dictaphone = () => {
       <div 
       className="mt-5 p-2 text-center bg-slate-600 rounded-md text-white" 
       >
-        <p>{transcript.split(' ').slice(-10).join(' ')}</p>
+        <p>{transcript}</p>
       </div>
     </div>
   );

@@ -34,6 +34,27 @@ export default function AgendaManager() {
   const [newAgendaName, setNewAgendaName] = useState<string>("");
   const [recording, setRecording] = useState<boolean>(false);
 
+  const analyze = async (text: string) => {
+
+    // convert todos to just the id, name, and completed status
+    const todoList = todos.map((todo) => {
+      return {
+        id: todo.id,
+        name: todo.name,
+        completed: todo.completed
+      };
+    });
+
+    // send the text to the server for analysis
+    await fetch('/api/analyze', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ text, todos: todoList })
+    })
+  };
+
   useEffect(() => {
     if (recording) {
       console.log("Recording audio...");
@@ -266,7 +287,11 @@ export default function AgendaManager() {
           <div
             className="flex justify-center mt-4"
           >
-           <Dictaphone/> 
+           <Dictaphone onChange={
+              (transcribedText: string) => {
+                analyze(transcribedText);
+           }}
+           /> 
           </div>
         </div>
       ) : (
