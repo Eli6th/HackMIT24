@@ -333,7 +333,7 @@ export default function AgendaManager() {
                 </div>
             </h2>
 
-          <form onSubmit={void addTask} className="mb-4 flex">
+          <form onSubmit={(e) => void addTask(e)} className="mb-4 flex">
             <input
               type="text"
               placeholder="Add a new task"
