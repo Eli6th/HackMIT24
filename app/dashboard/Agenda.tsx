@@ -7,13 +7,13 @@ import { useEffect, useState } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group"; // Animation Library
 import { Tooltip } from "react-tooltip";
 import Dictaphone from "./Microphone";
-
-
 import { SaveIcon } from "@heroicons/react/outline";
+import { type User } from "@supabase/supabase-js";
+
 // Define types for our todos and agendas
 interface Todo {
   id: number;
-  name: string;
+  name: string | null;
   completed: boolean;
   agenda_id: number;
   created_at: string;
@@ -22,7 +22,7 @@ interface Todo {
 
 interface Agenda {
   id: number;
-  name: string;
+  name: string | null;
   user_id: string;
   is_template: boolean;
   created_at: string;
@@ -31,6 +31,7 @@ interface Agenda {
 let transcript = "";
 export default function AgendaManager() {
   const supabase = createBrowserSupabaseClient();
+  const [user, setUser] = useState<User | null>(null);
   const [agendas, setAgendas] = useState<Agenda[]>([]);
   const [selectedAgenda, setSelectedAgenda] = useState<Agenda | null>(null);
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -60,7 +61,7 @@ export default function AgendaManager() {
     });
 
     // handle the response
-    const response = await json.json();
+    const response = await json.json() as { message: { agenda: { agenda: { id: number, name: string, completed: boolean, notes: string, changed: boolean }[] } } };
     console.log(response.message.agenda.agenda);
 
     const todoResponse = response.message.agenda.agenda.map(
@@ -69,7 +70,7 @@ export default function AgendaManager() {
           id: item.id,
           name: item.name,
           completed: item.completed,
-          agenda_id: selectedAgenda?.id,
+          agenda_id: selectedAgenda?.id ?? -1,
           created_at: new Date().toISOString(),
           reason: item.notes
         }
@@ -81,32 +82,42 @@ export default function AgendaManager() {
     // iterate over the response and see the changed todos
    if (response.message.agenda.agenda) {
     // there is a field changed in the response
-    const newTodos = []
-    for (let i = 0; i < response.message.agenda.agenda.length; i++) {
-      if (response.message.agenda.agenda[i].changed) {
-        newTodos.push({
-          id: response.message.agenda.agenda[i].id,
-          name: response.message.agenda.agenda[i].name,
-          completed: response.message.agenda.agenda[i].completed,
-          agenda_id: selectedAgenda?.id,
-          created_at: new Date().toISOString(),
-          reason: response.message.agenda.agenda[i].notes
-        });
-      }
-    }
-    
+    const newTodos = response.message.agenda.agenda
+      .filter(item => item.changed)
+      .map(item => ({
+        id: item.id,
+        name: item.name,
+        completed: item.completed,
+        agenda_id: selectedAgenda?.id,
+        created_at: new Date().toISOString(),
+        reason: item.notes
+      }));
 
-    newTodos.forEach(async todo => {
-      await supabase.from("todo").upsert([todo]);
+      await Promise.all(newTodos.map(todo =>
+        supabase.from("todo").upsert([todo])
+      ));
     }
-    );
-    }  
   };
 
   // Fetch agendas from Supabase
   useEffect(() => {
+    const fetchUser = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (error) {
+        console.error("Error fetching user:", error.message);
+      } else {
+        setUser(data.user);
+      }
+    };
+
+    void fetchUser();
+  }, []);
+
+  useEffect(() => {
     const fetchAgendas = async () => {
-      const { data, error } = await supabase.from<Agenda>("agenda").select("*").order("id", { ascending: true });
+      const { data, error } = await supabase.from("agenda").select("*").eq('user_id', user?.id ?? '').order("id", { ascending: true });
+      console.log(user);
+
       if (error) {
         console.error("Error fetching agendas:", error.message);
       } else {
@@ -114,15 +125,15 @@ export default function AgendaManager() {
       }
     };
 
-    fetchAgendas();
-  }, []);
+    void fetchAgendas();
+  }, [supabase, user]);
 
   // Fetch todos for the selected agenda
   useEffect(() => {
     if (selectedAgenda) {
       const fetchTodos = async () => {
         const { data, error } = await supabase
-          .from<Todo>("todo")
+          .from("todo")
           .select("*")
           .eq("agenda_id", selectedAgenda.id)
           .order("id", { ascending: true });
@@ -130,15 +141,21 @@ export default function AgendaManager() {
         if (error) {
           console.error("Error fetching todos:", error.message);
         } else {
-          setTodos(data || []);
+          setTodos(data?.map(item => ({
+            ...item,
+            completed: item.completed ?? false,
+            name: item.name ?? '',
+            reason: item.reason ?? '',
+            agenda_id: item.agenda_id ?? selectedAgenda?.id ?? -1,
+          })) || []);
         }
       };
 
-      fetchTodos();
+      void fetchTodos();
     }
-  }, [selectedAgenda]);
+  }, [supabase, selectedAgenda]);
 
-  <Dictaphone />;
+  <Dictaphone onChange={() => analyze} />;
   // Add new task to the selected agenda
   const addTask = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -177,22 +194,26 @@ export default function AgendaManager() {
   // Add a new agenda
   const addAgenda = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newAgendaName.trim() === "") return;
+    console.log("user", user);
+    if (newAgendaName.trim() === "" || !user) return;
 
     const agenda = {
       name: newAgendaName,
-      user_id: (await supabase.auth.getUser()).data.user?.id,
+      user_id: user?.id,
       id: Math.floor(Math.random() * 1000),
       created_at: new Date().toISOString(),
       is_template: false,
     };
 
-    const { error } = await supabase.from("agenda").insert([agenda]);
+    const { error } = await supabase.from("agenda").insert([{
+      ...agenda,
+      user_id: agenda.user_id ?? ''
+    }]);
 
     if (error) {
       console.error("Error adding agenda:", error.message);
     } else {
-      setAgendas([...agendas, ...([agenda] ?? [])]);
+      setAgendas([...agendas, agenda as Agenda]);
       setNewAgendaName("");
     }
   };
@@ -241,6 +262,10 @@ export default function AgendaManager() {
     }
   };
 
+  if (!user) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="mx-auto max-w-lg rounded-lg bg-white p-6 shadow-xl dark:bg-gray-800 dark:text-gray-300">
       <h1 className="mb-6 text-3xl font-semibold text-gray-900 dark:text-gray-100">
@@ -249,23 +274,13 @@ export default function AgendaManager() {
 
       {selectedAgenda ? (
         <div>
-          {/* <button
-            onClick={() => {
-              setTodos([]);
-              setSelectedAgenda(null)
-            }}
-            className="mb-4 text-blue-600 hover:underline dark:text-blue-300"
-          >
-            Back to Agendas
-          </button> */}
-
           <ArrowLeftIcon
             onClick={() => {
               setTodos([]);
               setSelectedAgenda(null);
             }}
             className="h-5 w-5 mb-5 text-blue-600 hover:text-blue-800 cursor-pointer"
-          />  
+          />
           {/* Drop down menu of agenda templates */}
             <div className="mb-4">
               <select
@@ -290,14 +305,14 @@ export default function AgendaManager() {
                 }
               </select>
             </div>
-          
+
             <h2 className="mb-4 text-2xl font-semibold text-black">
               <div className="mb-3">
               {selectedAgenda.name}
               </div>
               <div className=" flex items-center justify-between">
                 <button
-                onClick={() => saveAgendaAsTemplate(selectedAgenda.id)}
+                onClick={() => void saveAgendaAsTemplate(selectedAgenda.id)}
                 className="flex items-center bg-green-600 text-white rounded-lg px-3 py-2 hover:bg-green-800 cursor-pointer"
                 >
                 <SaveIcon className="h-5 w-5 mr-2" />
@@ -307,7 +322,7 @@ export default function AgendaManager() {
                 </button>
 
                 <button
-                onClick={() => deleteAgenda(selectedAgenda.id)}
+                onClick={() => void deleteAgenda(selectedAgenda.id)}
                 className="flex items-center bg-red-600 text-white rounded-lg px-3 py-2 hover:bg-red-800 cursor-pointer"
                 >
                 <TrashIcon className="h-5 w-5 mr-2" />
@@ -318,7 +333,7 @@ export default function AgendaManager() {
                 </div>
             </h2>
 
-          <form onSubmit={addTask} className="mb-4 flex">
+          <form onSubmit={void addTask} className="mb-4 flex">
             <input
               type="text"
               placeholder="Add a new task"
@@ -348,7 +363,7 @@ export default function AgendaManager() {
                     <input
                       type="checkbox"
                       checked={todo.completed}
-                      onChange={() => toggleComplete(todo)}
+                      onChange={() => void toggleComplete(todo)}
                       className="h-5 w-5 rounded border-gray-300 bg-white text-green-600 focus:ring-green-400"
                     />
 
@@ -363,7 +378,7 @@ export default function AgendaManager() {
                       {todo.reason}
                     </Tooltip>
                     <TrashIcon
-                      onClick={() => deleteTask(todo.id)}
+                      onClick={() => void deleteTask(todo.id)}
                       className="h-5 w-5 cursor-pointer text-red-600 hover:text-red-800"
                     />
                   </div>
@@ -379,14 +394,14 @@ export default function AgendaManager() {
           >
            <Dictaphone onChange={
               (transcript: string) => {
-                analyze(transcript);
+                void analyze(transcript);
            }}
-           /> 
+           />
           </div>
         </div>
       ) : (
         <div>
-          <form onSubmit={addAgenda} className="mb-4 flex">
+          <form onSubmit={(e) => void addAgenda(e)} className="mb-4 flex">
             <input
               type="text"
               placeholder="Add a new agenda"
@@ -406,7 +421,7 @@ export default function AgendaManager() {
             {agendas.map((agenda) => (
               <li
                 key={agenda.id}
-                onClick={() => setSelectedAgenda(agenda)}
+                onClick={() => void setSelectedAgenda(agenda)}
                 className="cursor-pointer rounded-lg border border-gray-400 bg-gray-100 p-3 text-black transition-all hover:bg-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600"
               >
                 {agenda.name}

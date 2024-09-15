@@ -12,24 +12,22 @@ const Dictaphone = (opts: {
     listening,
     browserSupportsSpeechRecognition
   } = useSpeechRecognition();
-  
 
   const [recording, setRecording] = useState(false);
 
-  if (!browserSupportsSpeechRecognition) {
-    return <span>Browser doesn't support speech recognition.</span>;
-  }
-
-
   useEffect(() => {
-    if (recording && !listening) {
+    if (recording && !listening && browserSupportsSpeechRecognition) {
       setTimeout(() => {
-        SpeechRecognition.startListening();
+        void SpeechRecognition.startListening();
         onChange(transcript);
       }, 1000); // small delay before restarting
     }
-  }, [listening, recording]);
+  }, [listening, recording, browserSupportsSpeechRecognition, transcript, onChange]);
 
+
+  if (!browserSupportsSpeechRecognition) {
+    return <span>Browser doesn&apos;t support speech recognition.</span>;
+  }
 
   return (
     <div
@@ -41,22 +39,22 @@ const Dictaphone = (opts: {
           <StopIcon
               className="h-16 w-16 text-red-600 hover:text-red-800 cursor-pointer"
               onClick={() => {
-                SpeechRecognition.stopListening()
+                void SpeechRecognition.stopListening()
                 setRecording(false)
               }}
-            /> 
+            />
         ) : (
           <MicrophoneIcon
             className="h-16 w-16 text-red-600 hover:text-red-800 cursor-pointer"
             onClick={() => {
-            SpeechRecognition.startListening()
+            void SpeechRecognition.startListening()
             setRecording(true)
         }}
         />
           )
-      }            
-      <div 
-      className="mt-5 p-2 text-center bg-slate-600 rounded-md text-white" 
+      }
+      <div
+        className="mt-5 p-2 text-center bg-slate-600 rounded-md text-white"
       >
         <p>{transcript}</p>
       </div>
