@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   const agenda_response_json = await callOpenAi({
     system_prompt: identifying_agenda_prompt,
     // get the last 20 words
-    message_prompt: `Transcript: ${data.transcript.slice(-20)} \n TODO list: ${data.todoList}`,
+    message_prompt: `Transcript: ${data.transcript} \n TODO list: ${data.todoList}`,
     json_response: identifying_agenda_json
   });
 

@@ -28,7 +28,7 @@ export async function callOpenAi({
         { role: "system", content: system_prompt },
         { role: "user", content: request_message }
       ],
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       max_tokens: 3000,
       response_format: { type: "json_object" },
       temperature: 0,
