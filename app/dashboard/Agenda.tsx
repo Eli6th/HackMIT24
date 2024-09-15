@@ -61,7 +61,7 @@ export default function AgendaManager() {
     const response = await json.json();
     console.log(response.message.agenda.agenda);
 
-    setTodos(response?.message.agenda?.agenda.map(
+    const todoResponse = response.message.agenda.agenda.map(
       item => {
         return {
           id: item.id,
@@ -72,8 +72,49 @@ export default function AgendaManager() {
           reason: item.notes
         }
       }
-    )
-  );
+    );
+
+    setTodos(todoResponse);
+
+    // iterate over the response and see the changed todos
+   if (response.message.agenda.agenda) {
+    // there is a field changed in the response
+    const newTodos = []
+    for (let i = 0; i < response.message.agenda.agenda.length; i++) {
+      if (response.message.agenda.agenda[i].changed) {
+        newTodos.push({
+          id: response.message.agenda.agenda[i].id,
+          name: response.message.agenda.agenda[i].name,
+          completed: response.message.agenda.agenda[i].completed,
+          agenda_id: selectedAgenda?.id,
+          created_at: new Date().toISOString(),
+          reason: response.message.agenda.agenda[i].notes
+        });
+      }
+    }
+    
+
+    newTodos.forEach(async todo => {
+      await supabase.from("todo").upsert([todo]);
+    }
+    );
+    }
+    
+
+
+    // setTodos(response?.message.agenda?.agenda.map(
+    //   item => {
+    //     return {
+    //       id: item.id,
+    //       name: item.name,
+    //       completed: item.completed,
+    //       agenda_id: selectedAgenda?.id,
+    //       created_at: new Date().toISOString(),
+    //       reason: item.notes
+    //     }
+    //   }
+    // )
+    // );
   };
 
   // Fetch agendas from Supabase

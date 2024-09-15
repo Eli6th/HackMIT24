@@ -5,9 +5,8 @@ the following are done:
 1. Identifying and ensuring a part of the agenda is covered.
 2. Noticing when the speaker mentioned that something should be added to the agenda.
 
-
 To do this, you'll need to parse the following transcript of the conversation along with the agenda. If a part of the agenda is covered, you should change the
-item in the list of agenda items as completed: true. Also include a short description of what was discussed for that item (the field "notes").
+item in the list of agenda items as "completed: true". Also include a short description of what was discussed for that item (the field "notes").
 
 In general, if an item is already listed as completed, it should stay completed unless the speaker mentions that it is not completed explicitly.
 
@@ -28,6 +27,7 @@ export const identifying_agenda_json = `
       "id": "Agenda id",
       "completed": true/false,
       "notes": "Notes on the agenda item"
+      "changed": true/false // This is a boolean that is true if the item was changed/added in this response
     }
   ],
 }
