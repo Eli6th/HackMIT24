@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { env } from "@/env.mjs";
-import { NextResponse } from "next/server";
 import { OpenAI } from 'openai';
 
 export async function callOpenAi({
@@ -34,17 +33,14 @@ export async function callOpenAi({
     });
 
     if (completion?.choices[0]?.message.content == undefined) {
-      return NextResponse.json({message: 'No response from OpenAI', error: null, status: 500});
+      return {message: 'No response from OpenAI', error: 'No response from OpenAI', errorCode: 500};
     }
 
-    const textCompletion = completion.choices[0].message.content;
-    return NextResponse.json({message: textCompletion, error: null, status: 200});
+    return {message: completion.choices[0].message.content, error: null, status: 200};
   } catch (error: unknown) {
     const errorMessage = (error as { message: string }).message || "An unexpected error occurred";
     const errorCode: number = (error as { status: number }).status || 500;
 
-    return new Response(JSON.stringify({ message: errorMessage, error: error }), {
-      status: errorCode
-    });
+    return { message: errorMessage, error: error, errorCode: errorCode };
   }
 }
